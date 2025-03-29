@@ -1,0 +1,32 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test  # S'assure que les tests passent avant le déploiement
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: username/todo-api:latest  # Remplacer par votre nom d'utilisateur Docker Hub
+
+    # Exemple de déploiement sur un serveur via SSH
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /path/to/deployment
+          docker-compose pull
+          docker-compose up -d
